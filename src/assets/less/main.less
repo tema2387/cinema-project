@@ -4,6 +4,11 @@ body {
     font-size: @baseFontSize !important;
 }
 
+ul {
+    padding: 0;
+    list-style: none;
+}
+
 a,
 .like-link {
     text-decoration: none;
@@ -36,7 +41,7 @@ img {
 //transitions
 .fade-enter-active,
 .fade-leave-active {
-    transition: opacity 0.3s;
+    transition: opacity 0.8s;
 }
 .fade-enter,
 .fade-leave-active {
@@ -78,13 +83,11 @@ img {
                 display: none;
             }
             &--prev {
-                background: url(../img/svg/arrow-prev.svg) center no-repeat,
-                    #fff;
+                background: url(../img/svg/arrow-prev.svg) center no-repeat, #fff;
                 left: -22px;
             }
             &--next {
-                background: url(../img/svg/arrow-next.svg) center no-repeat,
-                    #fff;
+                background: url(../img/svg/arrow-next.svg) center no-repeat, #fff;
                 right: -22px;
             }
             svg {

@@ -7,34 +7,42 @@
 @baseWidth: 100% / @columnCount;
 @siteWidth: 1280px;
 
-@containerPadding: 64px;
-@containerPaddingMd: 32px;
-@containerPaddingSm: 16px;
+@containerPadding: 30px;
+@containerPaddingMd: 30px;
+@containerPaddingSm: 15px;
 //breakpoints
 
-@large: 1600px;
+@large: 1279px;
 @largeStart: @medium + 1px;
 
 @medium: 768px;
 @mediumStart: @small + 1px;
 
-@small: 450px;
+@small: 480px;
 
 @sm: ~'screen and (max-width: @{small} )';
 @md: ~'screen and (max-width: @{medium} )';
+@lg: ~'screen and (max-width: @{large}';
 @notsm: ~'screen and (min-width: @{mediumStart} )';
-@supersm: ~'screen and (max-width: 449px )';
+@notmd: ~'screen and (min-width: @{largeStart} )';
 // z-index
 @mainZ: 10;
 //typography
-@baseFont: 'Circe', 'Arial', serif;
-@baseFontSize: 14px;
-@headerFont: 'Circe', 'Arial', serif;
+@baseFont: 'OpenSans', 'Arial', serif;
+@baseFontSize: 16px;
+@headerFont: 'OpenSans', 'Arial', serif;
 //colors
 
+@white: #fff;
 @primary: #000;
 @secondary: #ddd;
-@accent: blue;
+@accent: #fff;
+
+@d-gray: rgb(20, 20, 20);
+@gray: rgb(40, 40, 40);
+@l-gray: rgb(160, 160, 160);
+@bg-gray: rgb(240, 240, 240);
+@red: rgb(228, 42, 52);
 
 //mixins
 //transition
