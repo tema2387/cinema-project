@@ -9,6 +9,27 @@ ul {
     list-style: none;
 }
 
+button:disabled {
+    opacity: 0.3 !important;
+    cursor: default;
+}
+
+.border-error {
+    border: 2px solid @red !important;
+}
+.additional-list-open {
+    .modal-burger-menu__item-open {
+        &::after {
+            transform: translateY(-50%) rotate(180deg) !important;
+        }
+    }
+    .modal-burger-menu__additional-list {
+        opacity: 1;
+        max-height: max-content;
+        margin-top: 10px;
+    }
+}
+
 a,
 .like-link {
     text-decoration: none;
@@ -41,7 +62,7 @@ img {
 //transitions
 .fade-enter-active,
 .fade-leave-active {
-    transition: opacity 0.8s;
+    transition: opacity 0.3s;
 }
 .fade-enter,
 .fade-leave-active {

@@ -42,6 +42,7 @@ export default {
         { src: '~/plugins/v-click-outside.js' },
         { src: '~/plugins/vue-perfect-scrollbar.js' },
         { src: '~/plugins/v-body-scroll-lock.js', mode: 'client' },
+        { src: '~/plugins/persistedState.client.js', mode: 'client' },
     ],
 
     // Auto import components (https://go.nuxtjs.dev/config-components)

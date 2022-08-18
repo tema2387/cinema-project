@@ -1,8 +1,15 @@
 <template>
     <div class="input">
         <label>
-            <span class="input__name">{{ name }}</span>
-            <input type="text" class="input__field" />
+            <span v-if="input.name" class="input__name text_16">{{ input.name }}</span>
+            <input
+                v-model="input.value"
+                :class="{ 'border-error': input.border }"
+                :placeholder="input.placeholder"
+                class="input__field text_14"
+                type="text"
+            />
+            <slot></slot>
         </label>
     </div>
 </template>
@@ -10,18 +17,29 @@
 export default {
     name: 'Input',
     props: {
-        name: {
-            type: String,
-            default: 'Поле ввода',
+        input: {
+            type: Object,
+            default() {
+                return {}
+            },
         },
     },
 }
 </script>
 <style lang="less">
 .input {
+    flex: 1;
     &__field {
         width: 100%;
         margin-top: 5px;
+        min-height: 45px;
+        padding: 5px 5px 5px 10px;
+        outline: none;
+        border: 1px solid @primary;
+        border-radius: 10px;
+        &:focus {
+            border: 1px solid @red;
+        }
     }
 }
 </style>
