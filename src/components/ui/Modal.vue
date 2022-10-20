@@ -2,7 +2,7 @@
     <transition name="fade">
         <div v-if="open" class="modal flex">
             <svg-icon name="close" width="30" height="30" class="modal__close" @click="$emit('open', false)" />
-            <div class="modal__main">
+            <div v-click-outside="clickModalOutside" class="modal__main">
                 <div class="modal__title flex-c text_24">
                     <span class="flex">{{ name }}</span>
                     <svg-icon
@@ -33,14 +33,31 @@ export default {
             default: false,
         },
     },
+    watch: {
+        open(newVal) {
+            const body = document.querySelector('body')
+            if (newVal === true) {
+                body.style.overflow = 'hidden'
+            } else {
+                body.style.overflow = null
+            }
+        },
+    },
+    methods: {
+        clickModalOutside() {
+            this.$emit('open', false)
+        },
+    },
 }
 </script>
 <style lang="less">
 .modal {
     left: 0;
+    top: 0;
+    right: 0;
     bottom: 0;
     z-index: 1000;
-    position: absolute;
+    position: fixed;
     backdrop-filter: blur(2px);
     height: 100vh;
     width: 100vw;
@@ -73,8 +90,8 @@ export default {
         }
     }
     &__title {
-        background: @white;
-        color: @primary;
+        background: @primary;
+        color: @white;
         height: 50px;
         span {
             justify-content: center;
@@ -91,7 +108,8 @@ export default {
     &__content {
         padding: 20px 20px 20px;
         height: calc(100vh - 50px);
-        background: @bg-gray;
+        background: @gray;
+        color: @white;
         overflow-y: auto;
         position: relative;
     }

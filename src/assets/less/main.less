@@ -2,6 +2,8 @@ html,
 body {
     font-family: @baseFont !important;
     font-size: @baseFontSize !important;
+    background: @primary;
+    color: @white;
 }
 
 ul {
@@ -14,21 +16,49 @@ button:disabled {
     cursor: default;
 }
 
+// динамические классы
 .border-error {
     border: 2px solid @red !important;
 }
 .additional-list-open {
     .modal-burger-menu__item-open {
+        transition: 0.3s;
         &::after {
             transform: translateY(-50%) rotate(180deg) !important;
         }
     }
-    .modal-burger-menu__additional-list {
-        opacity: 1;
-        max-height: max-content;
-        margin-top: 10px;
+}
+.header-scroll {
+    top: -60px !important;
+    .header__bottom {
+        background: @op-gray !important;
+    }
+    @media @md {
+        top: 0 !important;
     }
 }
+.select-dropdown-open {
+    .icon {
+        transform: rotate(270deg) !important;
+    }
+}
+.current-select {
+    position: relative;
+    color: @white !important;
+    &::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        bottom: 0;
+        left: 0;
+        border-bottom: 2px solid @red;
+    }
+}
+.scroll-animation {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+}
+//
 
 a,
 .like-link {
@@ -62,11 +92,11 @@ img {
 //transitions
 .fade-enter-active,
 .fade-leave-active {
-    transition: opacity 0.3s;
+    transition: opacity 0.3s !important;
 }
 .fade-enter,
 .fade-leave-active {
-    opacity: 0;
+    opacity: 0 !important;
 }
 
 .site {
@@ -75,8 +105,15 @@ img {
     flex-direction: column;
     &__content {
         flex-grow: 1;
+        padding-top: 120px;
+        @media @md {
+            padding-top: 60px;
+        }
     }
     .splide {
+        // .is-active + li {
+        //     opacity: 1;
+        // }
         &__pagination {
             bottom: unset;
             top: 100%;
@@ -91,28 +128,34 @@ img {
                 }
             }
         }
+        &__slide {
+            transition: 0.3s;
+        }
         &__arrow {
-            box-shadow: 0 4px 16px rgba(38, 40, 43, 0.16);
+            width: 50px;
+            backdrop-filter: blur(13px);
+            background-color: @bg-d-gray;
+            cursor: pointer;
+            height: 100px;
+            border-radius: 0;
+            position: absolute;
+            transition: 0.3s;
             opacity: 1;
-            width: 44px;
-            height: 44px;
-            .trs(opacity);
-            &:hover {
-                opacity: 0.8;
+            z-index: 10;
+            @media @sm {
+                display: none;
             }
             &[disabled] {
                 display: none;
             }
             &--prev {
-                background: url(../img/svg/arrow-prev.svg) center no-repeat, #fff;
-                left: -22px;
+                left: 20px;
             }
             &--next {
-                background: url(../img/svg/arrow-next.svg) center no-repeat, #fff;
-                right: -22px;
+                right: 20px;
             }
             svg {
-                display: none;
+                fill: @white;
             }
         }
     }

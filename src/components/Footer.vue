@@ -8,6 +8,7 @@ export default {
 </script>
 <style lang="less">
 .footer {
+    height: 120px;
     text-align: center;
 }
 </style>

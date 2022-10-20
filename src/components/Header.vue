@@ -1,5 +1,5 @@
 <template>
-    <header class="header">
+    <header ref="header" class="header">
         <div class="header__top">
             <div class="container flex-c">
                 <div class="header__top-logo text_24-bold">
@@ -7,57 +7,54 @@
                 </div>
                 <ul v-if="!searchOpen" class="header__top-list flex-c text_16">
                     <li class="header__top-item">
-                        <nuxt-link to="#">Кино</nuxt-link>
-                    </li>
-                    <li class="header__top-item">
-                        <nuxt-link to="#">Сериалы</nuxt-link>
-                    </li>
-                    <li class="header__top-item">
-                        <nuxt-link to="#">Спорт</nuxt-link>
-                    </li>
-                    <li class="header__top-item">
-                        <nuxt-link to="#">Детям</nuxt-link>
+                        <nuxt-link to="/">Кино</nuxt-link>
                     </li>
                 </ul>
                 <div v-if="searchOpen" class="header__top-search">
-                    <div class="header__top-search-main flex-c">
-                        <svg-icon name="search" width="30" height="30" />
-                        <UiInput :input="{ placeholder: 'Название фильма или сериала' }" />
-                        <svg-icon
-                            name="close"
-                            width="30"
-                            height="30"
-                            class="header__top-search-close"
-                            @click="searchOpen = false"
-                        />
-                    </div>
-                    <div class="header__top-search-offers">
-                        <div class="container">
-                            <div class="header__top-search-offers-maybe">
-                                <h1 class="header__top-search-offers-title text_24-bold">Возможно вы имели в виду:</h1>
-                                <ul class="header__top-search-offers-list">
-                                    <li class="header__top-search-offers-item">s</li>
-                                    <li class="header__top-search-offers-item">s</li>
-                                    <li class="header__top-search-offers-item">s</li>
-                                    <li class="header__top-search-offers-item">s</li>
-                                    <li class="header__top-search-offers-item">s</li>
-                                    <li class="header__top-search-offers-item">s</li>
-                                    <li class="header__top-search-offers-item">s</li>
-                                    <li class="header__top-search-offers-item">s</li>
-                                </ul>
-                            </div>
-                            <div class="header__top-search-offers-often">
-                                <h1 class="header__top-search-offers-title text_24-bold">Часто ищут:</h1>
-                                <ul class="header__top-search-offers-list">
-                                    <li class="header__top-search-offers-item">s</li>
-                                    <li class="header__top-search-offers-item">s</li>
-                                    <li class="header__top-search-offers-item">s</li>
-                                    <li class="header__top-search-offers-item">s</li>
-                                    <li class="header__top-search-offers-item">s</li>
-                                    <li class="header__top-search-offers-item">s</li>
-                                    <li class="header__top-search-offers-item">s</li>
-                                    <li class="header__top-search-offers-item">s</li>
-                                </ul>
+                    <div v-click-outside="closeSearch" class="header_top-search-content">
+                        <div class="header__top-search-main flex-c">
+                            <svg-icon name="search" width="30" height="30" />
+                            <UiInput :input="inputSearch" @enter="goToSearch" />
+                            <svg-icon
+                                name="close"
+                                width="30"
+                                height="30"
+                                class="header__top-search-close"
+                                @click="closeSearch"
+                            />
+                        </div>
+                        <div class="header__top-search-offers">
+                            <div class="container">
+                                <div v-if="inputSearch.value.length >= 2" class="header__top-search-offers-maybe">
+                                    <nuxt-link
+                                        :to="`/search/${inputSearch.value}`"
+                                        class="header__top-search-offers-title text_24-bold"
+                                        @click.native="closeSearch"
+                                        >Все результаты <svg-icon name="arrow-next" height="15" width="15"
+                                    /></nuxt-link>
+                                    <div class="header__top-search-offers-list">
+                                        <SiteSearchPoster
+                                            v-for="movie of filterSearch"
+                                            :key="movie.id"
+                                            :movie="movie"
+                                            @click.native="closeSearch"
+                                        ></SiteSearchPoster>
+                                    </div>
+                                    <span v-if="!filterSearch.length" class="text_18"
+                                        >Извините, по вашему запросу ничего не найдено</span
+                                    >
+                                </div>
+                                <div v-if="inputSearch.value.length < 2" class="header__top-search-offers-often">
+                                    <h1 class="header__top-search-offers-title text_24-bold">Часто ищут</h1>
+                                    <div class="header__top-search-offers-list">
+                                        <SiteSearchPoster
+                                            v-for="movie of findOftenMovies"
+                                            :key="movie.id"
+                                            :movie="movie"
+                                            @click.native="closeSearch"
+                                        ></SiteSearchPoster>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -70,115 +67,29 @@
                         width="30"
                         height="30"
                         class="header__top-search-icon"
-                        @click="searchOpen = true"
+                        @click="openSearch"
                     />
-                    <nuxt-link to="#" class="header__top-subscribe text_16">Подписка</nuxt-link>
-                    <div v-if="!completeEntry" class="header__top-login flex-c text_16" @click="modalOpen = true">
-                        <svg-icon name="user" width="30" height="30" />
-                        <span>Войти</span>
-                    </div>
-                    <div v-if="completeEntry" class="header__top-user text_16">
-                        <div class="header__top-user-main flex-c" @click="userMenuOpen = true">
+                    <div v-if="!completeEntry" class="header__top-login">
+                        <div class="header__top-login-main flex-c text_16" @click="modalLoginOpen = true">
                             <svg-icon name="user" width="30" height="30" />
-                            <span>{{ user }}</span>
+                            <span>Войти</span>
                         </div>
-                        <UiModal :open="userMenuOpen" :name="'Meню'" @open="openUserMenu">
-                            <div class="modal-user-menu">
-                                <div class="modal-user-menu__title text_28-bold">Привет, {{ user }}!</div>
-                                <ul class="modal-user-menu__list text_18 flex">
-                                    <li class="modal-user-menu__item">
-                                        <nuxt-link to="#">Избранные фильмы</nuxt-link>
-                                    </li>
-                                    <li class="modal-user-menu__item"><nuxt-link to="#">Подписка</nuxt-link></li>
-                                    <li class="modal-user-menu__item">
-                                        <nuxt-link to="#">Подборка для меня</nuxt-link>
-                                    </li>
-                                </ul>
-                                <span class="modal-user-menu__exit text_18" @click="exitUserMenu">Выход</span>
-                            </div>
-                        </UiModal>
-                    </div>
-                    <div class="header__top-menu">
-                        <div class="header__top-menu-burger flex" @click="burgerMenuOpen = true">
-                            <span></span>
-                            <span></span>
-                            <span></span>
-                        </div>
-                        <div class="header__top-menu-content">
-                            <UiModal :open="burgerMenuOpen" :name="'Meню'" @open="openBurgerMenu">
-                                <div class="modal-burger-menu">
-                                    <ul class="modal-burger-menu__list text_18 flex">
-                                        <li class="modal-burger-menu__item">
-                                            <span class="modal-burger-menu__item-open" @click="openAdditionalList"
-                                                >Кино</span
-                                            >
-                                            <ul class="modal-burger-menu__additional-list flex text_16">
-                                                <li class="modal-burger-menu__additional-item">
-                                                    <nuxt-link to="#">Рекомендации</nuxt-link>
-                                                </li>
-                                                <li class="modal-burger-menu__additional-item">
-                                                    <nuxt-link to="#">Новинки</nuxt-link>
-                                                </li>
-                                                <li class="modal-burger-menu__additional-item">
-                                                    <nuxt-link to="#">Каталог</nuxt-link>
-                                                </li>
-                                                <li class="modal-burger-menu__additional-item">
-                                                    <nuxt-link to="#">По подписке</nuxt-link>
-                                                </li>
-                                                <li class="modal-burger-menu__additional-item">
-                                                    <nuxt-link to="#">Бесплатно</nuxt-link>
-                                                </li>
-                                            </ul>
-                                        </li>
-                                        <li class="modal-burger-menu__item">
-                                            <span class="modal-burger-menu__item-open" @click="openAdditionalList"
-                                                >Сериалы</span
-                                            >
-                                            <ul class="modal-burger-menu__additional-list flex text_16">
-                                                <li class="modal-burger-menu__additional-item">
-                                                    <nuxt-link to="#">Рекомендации</nuxt-link>
-                                                </li>
-                                                <li class="modal-burger-menu__additional-item">
-                                                    <nuxt-link to="#">Новинки</nuxt-link>
-                                                </li>
-                                                <li class="modal-burger-menu__additional-item">
-                                                    <nuxt-link to="#">Каталог</nuxt-link>
-                                                </li>
-                                                <li class="modal-burger-menu__additional-item">
-                                                    <nuxt-link to="#">По подписке</nuxt-link>
-                                                </li>
-                                                <li class="modal-burger-menu__additional-item">
-                                                    <nuxt-link to="#">Бесплатно</nuxt-link>
-                                                </li>
-                                            </ul>
-                                        </li>
-                                        <li class="modal-burger-menu__item">
-                                            <nuxt-link to="#">Спорт</nuxt-link>
-                                        </li>
-                                        <li class="modal-burger-menu__item">
-                                            <nuxt-link to="#">Детям</nuxt-link>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </UiModal>
-                        </div>
-                    </div>
-                    <template v-if="!completeEntry">
-                        <UiModal :open="modalOpen" :name="titleModal" @open="openModal">
+                        <UiModal :open="modalLoginOpen" :name="titleModal" @open="openLoginModal">
                             <div v-if="pageLogin === 1" class="modal-login">
                                 <h1 class="modal-login__title text_28-bold">Войти</h1>
-                                <form class="modal-login__form">
+                                <form class="modal-login__form" @keyup.enter="entry">
                                     <div class="modal-login__fields flex">
                                         <UiInput :input="inputEntryLogin" />
                                         <UiInput :input="inputEntryPass" />
-                                        <div v-if="entryError" class="modal-login__errors text_14">
-                                            <span>Не правильный логин или пароль</span>
-                                        </div>
+                                        <span v-if="entryError" class="modal-login__error text_14"
+                                            >Не правильный логин или пароль</span
+                                        >
                                     </div>
                                     <UiButton
-                                        :disabled="checkEntryContent"
+                                        :disabled="checkEntryContent || entryError === true"
                                         :class="'text_18'"
                                         :size="'lg'"
+                                        :type="'button'"
                                         @click.native="entry"
                                         >Вход</UiButton
                                     >
@@ -192,36 +103,32 @@
                             </div>
                             <div v-if="pageLogin === 2" class="modal-login">
                                 <h1 class="modal-login__title text_28-bold">Регистрация</h1>
-                                <form class="modal-login__form">
+                                <form class="modal-login__form" @keyup.enter="addUserToState">
                                     <div class="modal-login__fields flex">
                                         <UiInput :input="inputRegistrLogin">
-                                            <div class="modal-login__errors text_10">
-                                                <span v-if="registrError.login.format"
-                                                    >Логин должен быть формата a-z</span
-                                                >
-                                                <span v-if="registrError.login.alreadyRegistr"
-                                                    >Такой логин уже занят</span
-                                                >
-                                                <span v-if="registrError.login.lengthLogin"
-                                                    >Для логина должна быть больше 3 символов</span
-                                                >
-                                            </div>
+                                            <span
+                                                v-for="(err, index) of registrErrorLogin"
+                                                :key="index"
+                                                class="modal-login__error text_10"
+                                                >{{ err }}</span
+                                            >
                                         </UiInput>
                                         <UiInput :input="inputRegistrPass">
-                                            <div class="modal-login__errors text_10">
-                                                <span v-if="registrError.pass.format"
-                                                    >Пароль должен быть формата 0-9 a-z A-Z</span
-                                                >
-                                                <span v-if="registrError.pass.lengthPass"
-                                                    >Длина пароля должна быть больше 5 символов</span
-                                                >
-                                            </div>
+                                            <span
+                                                v-for="(err, index) of registrErrorPass"
+                                                :key="index"
+                                                class="modal-login__error text_10"
+                                                >{{ err }}</span
+                                            >
                                         </UiInput>
                                     </div>
                                     <UiButton
-                                        :disabled="checkRegistrContent"
+                                        :disabled="
+                                            registrErrorLogin.length || registrErrorPass.length || checkRegistrContent
+                                        "
                                         :class="'text_18'"
                                         :size="'lg'"
+                                        :type="'button'"
                                         @click.native="addUserToState"
                                         >Зарегистрироваться</UiButton
                                     >
@@ -244,18 +151,93 @@
                                 </div>
                             </div>
                         </UiModal>
-                    </template>
+                    </div>
+                    <div v-if="completeEntry" class="header__top-user text_16">
+                        <div class="header__top-user-main flex-c" @click="userMenuOpen = true">
+                            <svg-icon name="user" width="30" height="30" />
+                            <span>{{ user }}</span>
+                        </div>
+                        <UiModal :open="userMenuOpen" :name="'Meню'" @open="openUserMenu">
+                            <div class="modal-user-menu">
+                                <div class="modal-user-menu__title text_28-bold">Привет, {{ user }}!</div>
+                                <ul class="modal-user-menu__list text_18 flex">
+                                    <li class="modal-user-menu__item">
+                                        <nuxt-link to="#">Ваши фильмы</nuxt-link>
+                                    </li>
+                                    <li class="modal-user-menu__item"><nuxt-link to="#">Подписка</nuxt-link></li>
+                                    <li class="modal-user-menu__item">
+                                        <nuxt-link to="#">Подборка для меня</nuxt-link>
+                                    </li>
+                                </ul>
+                                <span class="modal-user-menu__exit text_18" @click="exitUserMenu">Выход</span>
+                            </div>
+                        </UiModal>
+                    </div>
+                    <div class="header__top-menu">
+                        <div class="header__top-menu-burger flex" @click="burgerMenuOpen = true">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <div class="header__top-menu-content">
+                            <UiModal :open="burgerMenuOpen" :name="'Meню'" @open="openBurgerMenu">
+                                <div class="modal-burger-menu">
+                                    <ul class="modal-burger-menu__list text_18 flex">
+                                        <li class="modal-burger-menu__item">
+                                            <span
+                                                class="modal-burger-menu__item-open text_24"
+                                                @click="openAdditionalList"
+                                                >Кино</span
+                                            >
+                                            <transition name="fade">
+                                                <ul
+                                                    v-if="additionalListOpen"
+                                                    class="modal-burger-menu__additional-list flex text_18"
+                                                >
+                                                    <li
+                                                        @click="burgerMenuOpen = false"
+                                                        class="modal-burger-menu__additional-item"
+                                                    >
+                                                        <nuxt-link to="/">Рекомендации</nuxt-link>
+                                                    </li>
+                                                    <li
+                                                        @click="burgerMenuOpen = false"
+                                                        class="modal-burger-menu__additional-item"
+                                                    >
+                                                        <nuxt-link to="/collection/new">Новинки</nuxt-link>
+                                                    </li>
+                                                    <li
+                                                        @click="burgerMenuOpen = false"
+                                                        class="modal-burger-menu__additional-item"
+                                                    >
+                                                        <nuxt-link to="/collection/genres">Каталог</nuxt-link>
+                                                    </li>
+                                                </ul>
+                                            </transition>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </UiModal>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="header__bottom">
             <div class="container flex-c">
                 <ul class="header__bottom-list flex-c text_16">
-                    <li class="header__bottom-item"><nuxt-link to="#">Рекомендации</nuxt-link></li>
-                    <li class="header__bottom-item"><nuxt-link to="#">Новинки</nuxt-link></li>
-                    <li class="header__bottom-item"><nuxt-link to="#">Каталог</nuxt-link></li>
-                    <li class="header__bottom-item"><nuxt-link to="#">По подписке</nuxt-link></li>
-                    <li class="header__bottom-item"><nuxt-link to="#">Бесплатно</nuxt-link></li>
+                    <li :class="{ 'current-select': this.$route.path === '/' }" class="header__bottom-item">
+                        <nuxt-link to="/" @click.native="burgerMenuOpen = false">Рекомендации</nuxt-link>
+                    </li>
+                    <li
+                        :class="{ 'current-select': this.$route.path === '/collection/new' }"
+                        class="header__bottom-item"
+                    >
+                        <nuxt-link to="/collection/new" @click.native="burgerMenuOpen = false">Новинки</nuxt-link>
+                    </li>
+                    <li :class="{ 'current-select': this.$route.path.includes('/genres') }" class="header__bottom-item">
+                        <nuxt-link to="/collection/genres" @click.native="burgerMenuOpen = false">Каталог</nuxt-link>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -291,29 +273,26 @@ export default {
                 value: null,
                 border: false,
             },
-            modalOpen: false,
+            inputSearch: {
+                placeholder: 'Название фильма или сериала',
+                value: '',
+            },
+            modalLoginOpen: false,
             pageLogin: 1,
             searchOpen: false,
-            registrError: {
-                login: {
-                    format: false,
-                    alreadyRegistr: false,
-                    lengthLogin: false,
-                },
-                pass: {
-                    format: false,
-                    lengthPass: false,
-                },
-            },
+            registrErrorLogin: [],
+            registrErrorPass: [],
             entryError: false,
             completeRegistr: false,
             completeEntry: false,
             user: null,
             userMenuOpen: false,
             burgerMenuOpen: false,
+            additionalListOpen: false,
         }
     },
     computed: {
+        ...mapState(['movies']),
         ...mapState('users', ['users']),
         titleModal() {
             return this.pageLogin === 1 ? 'Авторизация' : 'Регистрация'
@@ -334,33 +313,22 @@ export default {
                 this.inputEntryPass.value.length === 0
             )
         },
+        filterSearch() {
+            return this.movies
+                .filter((f, i) => f.name_russian.toLowerCase().includes(this.inputSearch.value.toLowerCase()))
+                .slice(0, 6)
+        },
+        findOftenMovies() {
+            return this.movies.slice(0, 6)
+        },
     },
     watch: {
-        modalOpen(newVal) {
-            const body = document.querySelector('body')
-            if (newVal === true) {
-                body.style.overflow = 'hidden'
-            } else {
-                body.style.overflow = null
-            }
-        },
-        searchOpen(newVal) {
-            const body = document.querySelector('body')
-            if (newVal === true) {
-                body.style.overflow = 'hidden'
-            } else {
-                body.style.overflow = null
-            }
-        },
         'inputRegistrLogin.value'() {
-            this.registrError.login.format = false
-            this.registrError.login.alreadyRegistr = false
-            this.registrError.login.lengthLogin = false
+            this.registrErrorLogin = []
             this.inputRegistrLogin.border = false
         },
         'inputRegistrPass.value'() {
-            this.registrError.pass.format = false
-            this.registrError.pass.lengthPass = false
+            this.registrErrorPass = []
             this.inputRegistrPass.border = false
         },
         'inputEntryLogin.value'() {
@@ -375,34 +343,36 @@ export default {
         },
         pageLogin() {
             this.completeRegistr = false
+            this.entryError = false
+            this.registrErrorLogin = []
+            this.registrErrorPass = []
+            this.inputRegistrLogin.value = null
+            this.inputRegistrPass.value = null
+            this.inputEntryLogin.value = null
+            this.inputEntryPass.value = null
+        },
+        searchOpen(newVal) {
+            const body = document.querySelector('body')
+            if (newVal === true) {
+                body.style.overflow = 'hidden'
+            } else {
+                body.style.overflow = null
+            }
         },
     },
     mounted() {
-        if (document.cookie.length) {
-            const user = document.cookie
-                .replace(/\s/g, '')
-                .split(';')
-                .filter((f) => f.startsWith('user'))
-                .join('')
-                .split('=')[1]
-            const pass = document.cookie
-                .replace(/\s/g, '')
-                .split(';')
-                .filter((f) => f.startsWith('pass'))
-                .join('')
-                .split('=')[1]
-
-            if (user.length && pass.length) {
-                this.inputEntryLogin.value = user
-                this.inputEntryPass.value = pass
-                this.entry()
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset >= 60) {
+                this.$refs.header.classList.add('header-scroll')
+            } else {
+                this.$refs.header.classList.remove('header-scroll')
             }
-        }
+        })
     },
     methods: {
         ...mapMutations('users', ['addUser']),
-        openModal(open) {
-            this.modalOpen = open
+        openLoginModal(open) {
+            this.modalLoginOpen = open
             this.pageLogin = 1
             this.completeRegistr = false
             this.inputRegistrLogin.value = null
@@ -416,32 +386,48 @@ export default {
 
             for (let i = 0; i < this.users.length; i++) {
                 if (this.users[i].login === login) {
-                    this.registrError.login.alreadyRegistr = true
+                    this.registrErrorLogin.push('Такой логин уже занят')
                     this.inputRegistrLogin.border = true
                     return
                 }
             }
 
-            if (login.length <= 3) {
-                this.registrError.login.lengthLogin = true
+            if (login.split(' ').join('').length <= 3) {
+                this.registrErrorLogin.push('Длина логина должна быть больше 3 символов')
                 this.inputRegistrLogin.border = true
                 return
             }
 
-            if (login.length !== login.match(/[a-zA-Z]/gi).length) {
-                this.registrError.login.format = true
+            if (login.split(' ').join('').length > 15) {
+                this.registrErrorLogin.push('Длина логина не должна превышать больше 15 символов')
                 this.inputRegistrLogin.border = true
                 return
             }
 
-            if (pass.length <= 5) {
-                this.registrError.pass.lengthPass = true
+            if (
+                login !==
+                String(login.match(/[0-9a-zA-Z]/gi))
+                    .split(',')
+                    .join('')
+            ) {
+                this.registrErrorLogin.push('Логин должен быть формата 0-9a-zA-Z без пробелов')
+                this.inputRegistrLogin.border = true
+                return
+            }
+
+            if (pass.split(' ').join('').length <= 5) {
+                this.registrErrorPass.push('Пароль должен быть больше 5 символов')
                 this.inputRegistrPass.border = true
                 return
             }
 
-            if (pass.length !== pass.match(/[0-9a-zA-Z]/gi).length) {
-                this.registrError.pass.format = true
+            if (
+                pass !==
+                String(pass.match(/[0-9a-zA-Z]/gi))
+                    .split(',')
+                    .join('')
+            ) {
+                this.registrErrorPass.push('Пароль должен быть формата 0-9a-zA-Z без пробелов')
                 this.inputRegistrPass.border = true
                 return
             }
@@ -465,6 +451,7 @@ export default {
                     return
                 }
             }
+
             this.entryError = true
             this.inputEntryLogin.border = true
             this.inputEntryPass.border = true
@@ -479,13 +466,30 @@ export default {
             document.cookie = 'user=a;max-age=-1'
             document.cookie = 'pass=a;max-age=-1'
             this.completeEntry = false
-            this.modalOpen = false
+            this.modalLoginOpen = false
         },
         openBurgerMenu(open) {
             this.burgerMenuOpen = open
         },
         openAdditionalList(e) {
             e.target.parentNode.classList.toggle('additional-list-open')
+            this.additionalListOpen = !this.additionalListOpen
+        },
+        openSearch() {
+            this.searchOpen = true
+        },
+        closeSearch() {
+            this.searchOpen = false
+            this.inputSearch.value = ''
+        },
+        goToSearch(value) {
+            if (value.length) {
+                this.$router.push(`/search/${value}`)
+            } else {
+                this.$router.push('/search')
+            }
+            this.searchOpen = false
+            this.inputSearch.value = ''
         },
     },
 }
@@ -493,6 +497,11 @@ export default {
 <style lang="less">
 .header {
     color: @l-gray;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    transition: 0.3s;
+    z-index: 1000;
     .container {
         height: 100%;
     }
@@ -511,8 +520,8 @@ export default {
             }
         }
         &-search {
-            flex-grow: 1;
             margin-right: 20px;
+            flex-grow: 1;
             .container {
                 height: max-content;
             }
@@ -525,11 +534,16 @@ export default {
                 background: @d-gray;
             }
             &-main {
+                flex: 1;
                 gap: 10px;
+                justify-content: flex-end;
+                .input {
+                    flex: 1;
+                }
             }
             &-icon {
                 cursor: pointer;
-                .trs(all);
+                transition: 0.3s;
                 &:hover {
                     color: @white;
                 }
@@ -537,30 +551,46 @@ export default {
             &-close {
                 cursor: pointer;
             }
-            &-offers {
-                position: absolute;
-                background: @d-gray;
-                z-index: 1000;
-                color: @white;
-                width: 100%;
-                left: 0;
-                padding: 20px 0;
-                overflow-y: scroll;
-                @media @md {
-                    height: calc(100vh - 110px);
-                }
-                &-maybe {
-                    margin-bottom: 20px;
-                }
-            }
             &-blur {
                 position: absolute;
                 backdrop-filter: blur(2px);
                 height: calc(100vh - 50px);
-                width: 100%;
+                width: 100vw;
                 left: 0;
                 @media @md {
                     height: calc(100vh - 110px);
+                }
+            }
+            &-offers {
+                position: absolute;
+                background: @d-gray;
+                background-size: cover;
+                color: @white;
+                z-index: 100;
+                left: 0;
+                right: 0;
+                padding: 20px 0;
+                max-width: 100%;
+                overflow-y: scroll;
+                @media @md {
+                    height: calc(100vh - 110px);
+                }
+                &-title {
+                    display: inline-flex;
+                    margin-bottom: 20px;
+                    align-items: center;
+                    gap: 20px;
+                }
+                &-list {
+                    display: grid;
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 10px;
+                    @media @md {
+                        grid-template-columns: repeat(2, 1fr);
+                    }
+                    @media @sm {
+                        grid-template-columns: repeat(1, 1fr);
+                    }
                 }
             }
         }
@@ -572,32 +602,35 @@ export default {
             }
         }
         &-subscribe {
-            background: linear-gradient(101.67deg, #48cce0 7.24%, #505add 34.12%, #be40c0 62.93%, #fba82b 92.22%);
-            color: @white;
-            padding: 5px 10px;
-            border-radius: 10px;
+            a {
+                background: linear-gradient(101.67deg, #48cce0 7.24%, #505add 34.12%, #be40c0 62.93%, #fba82b 92.22%);
+                color: @white;
+                padding: 5px 10px;
+                border-radius: 10px;
+            }
             @media @md {
                 display: none;
             }
         }
         &-login {
-            cursor: pointer;
-            gap: 10px;
-            span {
-                @media @md {
-                    display: none;
+            .modal__title {
+                background: @white;
+                color: @primary;
+            }
+            .modal__content {
+                background: @bg-gray;
+            }
+            &-main {
+                cursor: pointer;
+                gap: 10px;
+                span {
+                    @media @md {
+                        display: none;
+                    }
                 }
             }
         }
         &-user {
-            .modal__title {
-                background: @primary;
-                color: @white;
-            }
-            .modal__content {
-                background: @gray;
-                color: @white;
-            }
             &-main {
                 cursor: pointer;
                 gap: 10px;
@@ -625,16 +658,6 @@ export default {
                     display: none;
                 }
             }
-            &-content {
-                .modal__title {
-                    background: @primary;
-                    color: @white;
-                }
-                .modal__content {
-                    background: @gray;
-                    color: @white;
-                }
-            }
         }
     }
     &__bottom {
@@ -645,7 +668,15 @@ export default {
         }
         &-list {
             gap: 20px;
-            margin-left: 30px;
+            height: 100%;
+        }
+        &-item {
+            height: 100%;
+            a {
+                display: flex;
+                align-items: center;
+                height: 100%;
+            }
         }
     }
 }
@@ -657,19 +688,19 @@ export default {
     color: @primary;
     &__title {
         margin-bottom: 40px;
+        @media @md {
+            text-align: center;
+        }
     }
     &__form {
         margin-bottom: 30px;
-        .button {
-            width: 100%;
-        }
     }
     &__fields {
         gap: 10px;
         flex-direction: column;
         margin-bottom: 30px;
     }
-    &__errors {
+    &__error {
         color: @red;
     }
     &__choose {
@@ -677,10 +708,13 @@ export default {
         border-top: solid 1px @l-gray;
         justify-content: center;
         gap: 10px;
+        @media @md {
+            flex-direction: column;
+        }
         &-link {
             color: @red;
             cursor: pointer;
-            .trs(all);
+            transition: 0.3s;
             &:hover {
                 opacity: 0.8;
             }
@@ -740,24 +774,22 @@ export default {
         &::after {
             content: '';
             position: absolute;
-            border-right: 8px solid transparent;
-            border-left: 8px solid transparent;
-            border-top: 10px solid @white;
+            border-right: 6px solid transparent;
+            border-left: 6px solid transparent;
+            border-top: 8px solid @white;
             width: 0;
             height: 0;
             top: 50%;
             transform: translateY(-50%);
-            right: -25px;
-            .trs(all);
+            right: -18px;
+            transition: 0.3s;
         }
     }
     &__additional-list {
         flex-direction: column;
         margin-left: 30px;
-        gap: 10px;
-        max-height: 0;
-        opacity: 0;
-        transition: opacity 0.3s;
+        gap: 15px;
+        margin-top: 10px;
     }
 }
 </style>

@@ -8,6 +8,7 @@
                 :placeholder="input.placeholder"
                 class="input__field text_14"
                 type="text"
+                @keyup.enter="$emit('enter', input.value)"
             />
             <slot></slot>
         </label>
@@ -28,7 +29,6 @@ export default {
 </script>
 <style lang="less">
 .input {
-    flex: 1;
     &__field {
         width: 100%;
         margin-top: 5px;

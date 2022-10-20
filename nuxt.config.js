@@ -66,6 +66,7 @@ export default {
         '@nuxtjs/axios',
         '@nuxtjs/svg-sprite',
         '@nuxtjs/sitemap',
+        'vue-scrollto/nuxt',
     ],
     sitemap: {
         path: '/sitemap.xml',
@@ -79,6 +80,10 @@ export default {
     // Axios module configuration (https://go.nuxtjs.dev/config-axios)
     axios: {
         baseURL: process.env.API_URL || 'http://localhost:3001',
+    },
+    loading: {
+        color: 'red',
+        height: '5px',
     },
 
     // Build Configuration (https://go.nuxtjs.dev/config-build)

@@ -5,6 +5,7 @@ Vue.use(Vuex)
 
 export const state = () => ({
     users: [],
+    currentUser: null,
 })
 
 export const mutations = {
